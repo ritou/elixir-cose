@@ -1,0 +1,3 @@
+%{
+  "cbor": {:git, "https://github.com/timofey-barmin/cbor-erlang.git", "cc1673f1e9038267a564504690dc79ead77dd067", []},
+}
