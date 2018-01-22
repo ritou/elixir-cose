@@ -4,7 +4,7 @@ This is a log decoded using CBOR for [the example in CWT Spec](http://self-issue
 # A.1. Example CWT Claims Set
 iex(1)> hex = "a70175636f61703a2f2f61732e6578616d706c652e636f6d02656572696b77037818636f61703a2f2f6c696768742e6578616d706c652e636f6d041a5612aeb0051a5610d9f0061a5610d9f007420b71"
 "a70175636f61703a2f2f61732e6578616d706c652e636f6d02656572696b77037818636f61703a2f2f6c696768742e6578616d706c652e636f6d041a5612aeb0051a5610d9f0061a5610d9f007420b71"
-iex(2)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                                                                %{                                             
+iex(2)> Base.decode16!(hex, case: :lower) |> :cbor.decode()
 %{
   1 => "coap://as.example.com",
   2 => "erikw",
@@ -18,7 +18,7 @@ iex(2)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                     
 # A.2.1. 128-bit Symmetric Key
 iex(3)> hex = "a42050231f4c4d4d3051fdc2ec0a3851d5b3830104024c53796d6d6574726963313238030a"
 "a42050231f4c4d4d3051fdc2ec0a3851d5b3830104024c53796d6d6574726963313238030a"
-iex(4)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                                                                %{                                             
+iex(4)> Base.decode16!(hex, case: :lower) |> :cbor.decode()
 %{
   -1 => <<35, 31, 76, 77, 77, 48, 81, 253, 194, 236, 10, 56, 81, 213, 179, 131>>,
   1 => 4,
@@ -29,7 +29,7 @@ iex(4)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                     
 # A.2.2. 256-bit Symmetric Key
 iex(5)> hex = "a4205820403697de87af64611c1d32a05dab0fe1fcb715a86ab435f1ec99192d795693880104024c53796d6d6574726963323536030a"
 "a4205820403697de87af64611c1d32a05dab0fe1fcb715a86ab435f1ec99192d795693880104024c53796d6d6574726963323536030a"
-iex(6)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                                                                %{                                             
+iex(6)> Base.decode16!(hex, case: :lower) |> :cbor.decode()
 %{
   -1 => <<64, 54, 151, 222, 135, 175, 100, 97, 28, 29, 50, 160, 93, 171, 15,
     225, 252, 183, 21, 168, 106, 180, 53, 241, 236, 153, 25, 45, 121, 86, 147,
@@ -42,7 +42,8 @@ iex(6)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                     
 # A.2.3. ECDSA P-256 256-bit COSE Key
 iex(7)> hex = "a72358206c1382765aec5358f117733d281c1c7bdc39884d04a45a1e6c67c858bc206c1922582060f7f1a780d8a783bfb7a2dd6b2796e8128dbbcef9d3d168db9529971a36e7b9215820143329cce7868e416927599cf65a34f3ce2ffda55a7eca69ed8919a394d42f0f2001010202524173796d6d657472696345434453413235360326"
 "a72358206c1382765aec5358f117733d281c1c7bdc39884d04a45a1e6c67c858bc206c1922582060f7f1a780d8a783bfb7a2dd6b2796e8128dbbcef9d3d168db9529971a36e7b9215820143329cce7868e416927599cf65a34f3ce2ffda55a7eca69ed8919a394d42f0f2001010202524173796d6d657472696345434453413235360326"
-iex(8)> Base.decode16!(hex, case: :lower) |> :cbor.decode()                                                                %{                                                                                                                                  -4 => <<108, 19, 130, 118, 90, 236, 83, 88, 241, 23, 115, 61, 40, 28, 28, 123,
+iex(8)> Base.decode16!(hex, case: :lower) |> :cbor.decode()
+%{                                                                                                                               -4 => <<108, 19, 130, 118, 90, 236, 83, 88, 241, 23, 115, 61, 40, 28, 28, 123,
     220, 57, 136, 77, 4, 164, 90, 30, 108, 103, 200, 88, 188, 32, 108, 25>>,
   -3 => <<96, 247, 241, 167, 128, 216, 167, 131, 191, 183, 162, 221, 107, 39,
     150, 232, 18, 141, 187, 206, 249, 211, 209, 104, 219, 149, 41, 151, 26, 54,
