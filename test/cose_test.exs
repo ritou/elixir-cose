@@ -1,8 +1,8 @@
-defmodule CoseTest do
+defmodule COSETest do
   use ExUnit.Case
-  doctest Cose
+  doctest COSE
 
   test "greets the world" do
-    assert Cose.hello() == :world
+    assert COSE.hello() == :world
   end
 end
