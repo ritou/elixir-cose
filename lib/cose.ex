@@ -1,4 +1,4 @@
-defmodule Cose do
+defmodule COSE do
   @moduledoc """
   Documentation for Cose.
   """
@@ -8,7 +8,7 @@ defmodule Cose do
 
   ## Examples
 
-      iex> Cose.hello
+      iex> COSE.hello
       :world
 
   """
