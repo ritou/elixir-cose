@@ -20,4 +20,14 @@ defmodule COSE.CBORTest do
            |> CBOR.tag(:CWT_CBOR)
            |> CBOR.parse_tag() == {:CWT_CBOR, {:tag, 17, object}}
   end
+
+  test "encode" do
+    for value <- [0, 1, 10, 23, 24, 25, 100, 1000, 1000000, 1000000000000, 18446744073709551615, -18446744073709551615, -1, -10, -100,  -1000] do
+      assert CBOR.encode(value) == :cbor.encode(value)
+    end
+
+    for value <- [18446744073709551616, -18446744073709551616] do
+      assert CBOR.encode(value) == :cbor.encode(value) |> :erlang.list_to_bitstring()
+    end
+  end
 end

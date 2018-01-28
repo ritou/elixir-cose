@@ -3,11 +3,6 @@ defmodule COSE.CBOR do
   Erlang CBOR Wrapper module
   """
 
-  @spec encode(value :: any) :: binary
-  def encode(value), do: :cbor.encode(value) |> :erlang.list_to_binary()
-  @spec encode(cbor_binary :: binary) :: any
-  def decode(binary), do: :cbor.decode(binary)
-
   @cbor_tag_key %{
     :CWT_CBOR => 61,
     :COSE_Sign1 => 18,
@@ -34,4 +29,29 @@ defmodule COSE.CBOR do
   end
 
   def parse_tag(_), do: nil
+
+  # TODO: bignum
+  def encode(num) when is_integer(num) and num > 18446744073709551615, do: :cbor.encode(num) |> :erlang.list_to_binary()
+
+  # number
+  def encode(num) when is_integer(num) and num > 4294967295, do: <<27>> <> <<num :: size(64)>>
+  def encode(num) when is_integer(num) and num > 65535, do: <<26>> <> <<num :: size(32)>>
+  def encode(num) when is_integer(num) and num > 255, do: <<25>> <> <<num :: size(16)>>
+  def encode(num) when is_integer(num) and num > 23, do: <<24, num>>
+  def encode(num) when is_integer(num) and num >= 0, do: <<num>>
+
+  # negative number
+  def encode(num) when is_integer(num) and num >= -24, do: <<(num * -1) + 31>>
+  def encode(num) when is_integer(num) and num >= -255, do: <<56, (num + 1) * -1>>
+  def encode(num) when is_integer(num) and num >= -65535, do: <<57, (num + 1) * -1 :: size(16)>>
+  def encode(num) when is_integer(num) and num >= -4294967295, do: <<58, (num + 1) * -1 :: size(32)>>
+  def encode(num) when is_integer(num) and num >= -18446744073709551615, do: <<59, (num + 1) * -1 :: size(64)>>
+
+  # TODO: negative bignum
+  def encode(num) when is_integer(num) and num < -18446744073709551615, do: :cbor.encode(num) |> :erlang.list_to_binary()
+
+  def encode(value), do: :cbor.encode(value) |> :erlang.list_to_binary()
+
+  @spec encode(cbor_binary :: binary) :: any
+  def decode(binary), do: :cbor.decode(binary)
 end
