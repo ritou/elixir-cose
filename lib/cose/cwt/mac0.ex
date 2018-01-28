@@ -28,14 +28,26 @@ defmodule COSE.CWT.Mac0 do
   def to_tagged_object(_, _), do: nil
 
   @spec valid_tag?(object :: any, key :: SymmetricKey) :: boolean
-  def valid_tag?(object = [protected, unprotected, payload, tag], key = %SymmetricKey{}) when is_list(object) do
+  def valid_tag?(object = [protected, unprotected, payload, tag], key = %SymmetricKey{})
+      when is_list(object) do
     {protected_from_key, unprotected_from_key} = SymmetricKey.to_cwt_header(key)
+
     cond do
-      protected_from_key != protected -> false # TODO: validate with alg
-      unprotected_from_key != unprotected -> false # TODO: validate with kid
-      tag != SymmetricKey.tag(payload, key) -> false
-      true -> true
+      # TODO: validate with alg
+      protected_from_key != protected ->
+        false
+
+      # TODO: validate with kid
+      unprotected_from_key != unprotected ->
+        false
+
+      tag != SymmetricKey.tag(payload, key) ->
+        false
+
+      true ->
+        true
     end
   end
+
   def valid_tag?(_, _), do: false
 end
