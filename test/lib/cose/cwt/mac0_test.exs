@@ -38,5 +38,7 @@ defmodule COSE.CWT.Mac0Test do
                 <<191, 99, 102, 111, 111, 99, 98, 97, 114, 255>>,
                 <<69, 160, 229, 195, 127, 146, 77, 28>>
               ]}
+
+    assert Mac0.valid_tag?(mac0_object, key)
   end
 end
