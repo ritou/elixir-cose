@@ -11,7 +11,7 @@ defmodule COSE.CBOR do
   @cbor_tag_key %{
     :CWT_CBOR => 61,
     :COSE_Sign1 => 18,
-    :COSE_Mac0  => 17, 
+    :COSE_Mac0 => 17
   }
   @cbor_tag_value @cbor_tag_key |> Enum.into(%{}, fn {k, v} -> {v, k} end)
 
@@ -22,8 +22,9 @@ defmodule COSE.CBOR do
       tag_value -> {:tag, tag_value, object}
     end
   end
+
   def tag(_, _), do: nil
-  
+
   @spec parse_tag(tagged_cwt :: tuple) :: {tag_key :: atom, object :: any} | nil
   def parse_tag({:tag, tag_value, object}) when is_integer(tag_value) do
     case @cbor_tag_value[tag_value] do
@@ -31,5 +32,6 @@ defmodule COSE.CBOR do
       tag_key -> {tag_key, object}
     end
   end
+
   def parse_tag(_), do: nil
 end

@@ -30,9 +30,11 @@ defmodule COSE.CWT.Claims do
       |> CBOR.encode()
     rescue
       # TODO: return error
-      _ -> nil
+      _ ->
+        nil
     end
   end
+
   def to_binary(_), do: nil
 
   def to_map(binary) when is_binary(binary) and binary != "" do
@@ -43,9 +45,11 @@ defmodule COSE.CWT.Claims do
       |> Enum.into(%{}, fn {k, v} -> {key_to_claim_name(k), v} end)
     rescue
       # TODO: return error
-      _ -> nil
+      _ ->
+        nil
     end
   end
+
   def to_map(_), do: nil
 
   @registered_claims %{
@@ -66,10 +70,7 @@ defmodule COSE.CWT.Claims do
   defp claim_name_to_key(_), do: nil
   def __claim_name_to_key__(claim_name), do: claim_name_to_key(claim_name)
 
-  defp key_to_claim_name(key) when is_integer(key) do
-    @registered_keys[key]
-  end
-
+  defp key_to_claim_name(key) when is_integer(key), do: @registered_keys[key]
   defp key_to_claim_name(_), do: nil
   def __key_to_claim_name__(key), do: key_to_claim_name(key)
 end
