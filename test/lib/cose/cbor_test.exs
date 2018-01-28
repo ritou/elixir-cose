@@ -14,6 +14,7 @@ defmodule COSE.CBORTest do
 
     assert object |> CBOR.tag(:COSE_Mac0) == {:tag, 17, object}
     assert object |> CBOR.tag(:COSE_Mac0) |> CBOR.tag(:CWT_CBOR) == {:tag, 61, {:tag, 17, object}}
+
     assert object
            |> CBOR.tag(:COSE_Mac0)
            |> CBOR.tag(:CWT_CBOR)
