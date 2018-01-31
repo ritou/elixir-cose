@@ -56,8 +56,81 @@ defmodule COSE.CBOR do
   def encode(num) when is_integer(num) and num < -18_446_744_073_709_551_615,
     do: :cbor.encode(num) |> :erlang.list_to_binary()
 
-  def encode(value), do: :cbor.encode(value) |> :erlang.list_to_binary()
+  # map
+  def encode(map) when is_map(map) do
+    len = map_size(map)
 
-  @spec encode(cbor_binary :: binary) :: any
+    map_initial_byte(len) <>
+      (map
+       |> Map.to_list()
+       |> Enum.flat_map(fn {k, v} -> [k, v] end)
+       |> Enum.map_join(&encode(&1)))
+  end
+
+  # list
+  def encode(list) when is_list(list) do
+    list_initial_byte(length(list)) <> (list |> Enum.map_join(&encode(&1)))
+  end
+
+  # binary(text or hexed binary)
+  def encode(binary) when is_binary(binary) do
+    case binary |> hexed?() do
+      nil ->
+        binary |> encode_text(byte_size(binary))
+
+      decoded ->
+        decoded |> encode_bin(byte_size(decoded))
+    end
+  end
+
+  defp map_initial_byte(len) when len <= 23, do: <<160 + len>>
+  defp map_initial_byte(len) when len <= 255, do: <<184, len>>
+  defp map_initial_byte(len) when len <= 65535, do: <<185, len::size(16)>>
+  defp map_initial_byte(len) when len <= 4_294_967_295, do: <<186, len::size(32)>>
+  defp map_initial_byte(len) when len <= 18_446_744_073_709_551_615, do: <<187, len::size(64)>>
+  # not supported
+  defp map_initial_byte(_), do: <<0>>
+
+  defp encode_text(_, len) when len == 0, do: <<96>>
+  defp encode_text(value, len) when len <= 23, do: <<96 + len>> <> value
+  defp encode_text(value, len) when len <= 255, do: <<120, len>> <> value
+  defp encode_text(value, len) when len <= 65535, do: <<121, len::size(16)>> <> value
+  defp encode_text(value, len) when len <= 4_294_967_295, do: <<122, len::size(32)>> <> value
+
+  defp encode_text(value, len) when len <= 18_446_744_073_709_551_615,
+    do: <<123, len::size(64)>> <> value
+
+  # not supported
+  defp encode_text(_, _), do: <<0>>
+
+  defp encode_bin(_, len) when len == 0, do: <<64>>
+  defp encode_bin(value, len) when len <= 23, do: <<64 + len>> <> value
+  defp encode_bin(value, len) when len <= 255, do: <<88, len>> <> value
+  defp encode_bin(value, len) when len <= 65535, do: <<89, len::size(16)>> <> value
+  defp encode_bin(value, len) when len <= 4_294_967_295, do: <<90, len::size(32)>> <> value
+
+  defp encode_bin(value, len) when len <= 18_446_744_073_709_551_615,
+    do: <<91, len::size(64)>> <> value
+
+  # not supported
+  defp encode_bin(_, _), do: <<0>>
+
+  defp list_initial_byte(len) when len <= 23, do: <<128 + len>>
+  defp list_initial_byte(len) when len <= 255, do: <<152, len>>
+  defp list_initial_byte(len) when len <= 65535, do: <<153, len::size(16)>>
+  defp list_initial_byte(len) when len <= 4_294_967_295, do: <<154, len::size(32)>>
+  defp list_initial_byte(len) when len <= 18_446_744_073_709_551_615, do: <<155, len::size(64)>>
+  # not supported
+  defp list_initial_byte(_), do: <<0>>
+
+  @spec decode(cbor_binary :: binary) :: any
   def decode(binary), do: :cbor.decode(binary)
+
+  @hexed_regexp ~r/\Ah'([0-9a-fA-F]*)'\z/
+  defp hexed?(value) do
+    case Regex.run(@hexed_regexp, value) do
+      [_, hexed] -> hexed |> String.downcase() |> Base.decode16!(case: :lower)
+      _ -> nil
+    end
+  end
 end
