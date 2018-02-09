@@ -21,33 +21,33 @@ defmodule COSE.CWT.Mac0 do
 
   def to_object(_, _), do: nil
 
-  def to_tagged_object(raw_payload, key = %SymmetricKey{}) do
-    to_object(raw_payload, key) |> CBOR.tag(:COSE_Mac0)
-  end
-
-  def to_tagged_object(_, _), do: nil
-
-  @spec valid_tag?(object :: any, key :: SymmetricKey) :: boolean
-  def valid_tag?(object = [protected, unprotected, payload, tag], key = %SymmetricKey{})
-      when is_list(object) do
-    {protected_from_key, unprotected_from_key} = SymmetricKey.to_cwt_header(key)
-
-    cond do
-      # TODO: validate with alg
-      protected_from_key != protected ->
-        false
-
-      # TODO: validate with kid
-      unprotected_from_key != unprotected ->
-        false
-
-      tag != SymmetricKey.tag(payload, key) ->
-        false
-
-      true ->
-        true
+  @spec validate(object :: any, key :: SymmetricKey) ::
+    {:ok, payload :: any} |
+    {:error, :invalid_protected} |
+    {:error, :invalid_alg} |
+    {:error, :invalid_unprotected} |
+    {:error, :invalid_kid} |
+    {:error, :invalid_tag}
+  def validate(object = [protected, unprotected, payload, tag], key = %SymmetricKey{}) do
+    with :ok <- validate_protected(protected, key),
+         :ok <- validate_unprotected(unprotected, key),
+         :ok <- validate_tag(tag, payload, key)
+    do
+      {:ok, payload}
+    else
+      {:error, _} = e -> e
     end
   end
 
-  def valid_tag?(_, _), do: false
+  def validate_protected(protected, key) do
+    {:error, :invalid_protected}
+  end
+
+  def validate_unprotected(unprotected, key) do
+    {:error, :invalid_unprotected}
+  end
+
+  def validate_tag(tag, payload, key) do
+    {:error, :invalid_tag}
+  end
 end

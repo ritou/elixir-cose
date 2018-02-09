@@ -13,13 +13,13 @@ defmodule COSE.CWT.Claims do
 
   ```Elixir
   iex> claims = %{
-  ...>   "iss" => "coap://as.example.com",
-  ...>   "sub" => "erikw",
-  ...>   "aud" => "coap://light.example.com",
+  ...>   "iss" => {:text, "coap://as.example.com"},
+  ...>   "sub" => {:text, "erikw"},
+  ...>   "aud" => {:text, "coap://light.example.com"},
   ...>   "exp" => 1444064944,
   ...>   "nbf" => 1443944944,
   ...>   "iat" => 1443944944,
-  ...>   "cti" => "h'0b71'"
+  ...>   "cti" => "0b71" |> Base.decode16!(case: :lower)
   ...> }
   ...> 
   ...> COSE.CWT.Claims.to_binary(claims) |> Base.encode16(case: :lower)

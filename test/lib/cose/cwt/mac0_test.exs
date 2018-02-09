@@ -4,7 +4,7 @@ defmodule COSE.CWT.Mac0Test do
   alias COSE.CWT.Mac0
   doctest Mac0
 
-  alias COSE.SymmetricKey
+  alias COSE.{SymmetricKey, CBOR}
 
   test "HMAC_256_64" do
     k =
@@ -18,27 +18,30 @@ defmodule COSE.CWT.Mac0Test do
 
     key = SymmetricKey.new(k: k, kid: kid, alg: alg)
 
-    payload = %{"foo" => "bar"}
-    mac0_object = Mac0.to_object(payload, key)
+    payload =
+      %{1 => {:text, "coap://as.example.com"},
+        2 => {:text, "erikw"},
+        3 => {:text, "coap://light.example.com"},
+        4 => 1444064944,
+        5 => 1443944944,
+        6 => 1443944944,
+        7 => "0b71" |> Base.decode16!(case: :lower)}
 
-    assert mac0_object == [
-             <<161, 1, 4>>,
-             %{4 => "Symmetric256"},
-             <<191, 99, 102, 111, 111, 99, 98, 97, 114, 255>>,
-             <<69, 160, 229, 195, 127, 146, 77, 28>>
-           ]
+    [protected, unprotected, decoded_payload, tag] = Mac0.to_object(payload, key)
+    assert protected |> CBOR.decode() == %{1 => 4}
+    assert unprotected == %{4 => "Symmetric256"}
+    assert decoded_payload |> CBOR.decode() ==
+      %{
+        1 => "coap://as.example.com",
+        2 => "erikw",
+        3 => "coap://light.example.com",
+        4 => 1444064944,
+        5 => 1443944944,
+        6 => 1443944944,
+        7 => "\vq"
+      }
+    assert byte_size(tag) == 8
 
-    mac0_tagged_object = Mac0.to_tagged_object(payload, key)
-
-    assert mac0_tagged_object ==
-             {:tag, 17,
-              [
-                <<161, 1, 4>>,
-                %{4 => "Symmetric256"},
-                <<191, 99, 102, 111, 111, 99, 98, 97, 114, 255>>,
-                <<69, 160, 229, 195, 127, 146, 77, 28>>
-              ]}
-
-    assert Mac0.valid_tag?(mac0_object, key)
+    assert Mac0.to_object(payload, key) |> Mac0.validate(key)
   end
 end

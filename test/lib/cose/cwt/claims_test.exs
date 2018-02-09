@@ -25,13 +25,13 @@ defmodule COSE.CWT.ClaimsTest do
 
   test "to_binary, to_map" do
     claims = %{
-      "iss" => "coap://as.example.com",
-      "sub" => "erikw",
-      "aud" => "coap://light.example.com",
+      "iss" => {:text, "coap://as.example.com"},
+      "sub" => {:text, "erikw"},
+      "aud" => {:text, "coap://light.example.com"},
       "iat" => 1_443_944_944,
       "exp" => 1_444_064_944,
       "nbf" => 1_443_944_944,
-      "cti" => "h'0b71'"
+      "cti" => "0b71" |> Base.decode16!(case: :lower)
     }
 
     hex = Claims.to_binary(claims) |> Base.encode16(case: :lower)
