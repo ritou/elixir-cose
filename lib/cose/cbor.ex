@@ -1,6 +1,9 @@
 defmodule COSE.CBOR do
   @moduledoc """
-  Erlang CBOR Wrapper module
+  Functions for handling CBOR Object
+
+  * Tag
+  * Encode/Decode functions
   """
 
   require Logger
@@ -69,9 +72,6 @@ defmodule COSE.CBOR do
     |> :erlang.list_to_bitstring()
   end
 
-  # TODO: Floating-Point Numbers
-  def encode(float) when is_float(float), do: encode_with_erlang(float)
-
   # map
   def encode(map) when is_map(map) do
     len = map_size(map)
@@ -119,12 +119,17 @@ defmodule COSE.CBOR do
   def encode({:timeepoch, timeepoch}), do: encode_tag(1, timeepoch)
   def encode({:tag, tag, value}), do: encode_tag(tag, value)
 
+  # TODO: Floating-Point Numbers
+  def encode(float) when is_float(float), do: encode_with_erlang(float)
+
+  # TODO: Indefinite Lengths for Some Major Types
+
   # other
   def encode(value) do
     encode_with_erlang(value)
   end
 
-  def encode_with_erlang(value) do
+  defp encode_with_erlang(value) do
     Logger.debug("NOTE: encode #{inspect(value)} with :cbor.encode/1")
     encoded = :cbor.encode(value)
 
@@ -172,8 +177,7 @@ defmodule COSE.CBOR do
   defp list_initial_byte(len) when len <= 65535, do: <<153, len::size(16)>>
   defp list_initial_byte(len) when len <= 4_294_967_295, do: <<154, len::size(32)>>
   defp list_initial_byte(len) when len <= 18_446_744_073_709_551_615, do: <<155, len::size(64)>>
-  # not supported
-  defp list_initial_byte(_), do: <<0>>
+  defp list_initial_byte(_), do: <<0>> # not supported
 
   defp size256(num), do: <<num::size(256)>> |> binary_part(32, -1 * bignum_bytes(num))
   defp bignum_bytes(num) when num > 255, do: 1 + bignum_bytes(div(num, 256))
@@ -185,6 +189,7 @@ defmodule COSE.CBOR do
   defp encode_tag(tag, value) when tag <= 4_294_967_295, do: <<218, tag::size(32)>> <> encode(value)
   defp encode_tag(tag, value) when tag <= 18_446_744_073_709_551_615,
     do: <<91, tag::size(64)>> <> encode(value)
+  defp encode_tag(_, _), do: <<0>> # not supported
 
   @spec decode(cbor_binary :: binary) :: any
   def decode(binary), do: :cbor.decode(binary)

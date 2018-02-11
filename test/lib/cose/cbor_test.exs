@@ -22,6 +22,7 @@ defmodule COSE.CBORTest do
   end
 
   test "encode" do
+    # NOTE: https://tools.ietf.org/html/rfc7049#appendix-A
     assert CBOR.encode(0, [to_hex: true]) == "00"
     assert CBOR.encode(1, [to_hex: true]) == "01"
     assert CBOR.encode(10, [to_hex: true]) == "0a"
@@ -79,5 +80,17 @@ defmodule COSE.CBORTest do
     assert CBOR.encode({:text, "\"\\"}, [to_hex: true]) == "62225c"
     assert CBOR.encode({:text, "\u00fc"}, [to_hex: true]) == "62c3bc"
     assert CBOR.encode({:text, "\u6c34"}, [to_hex: true]) == "63e6b0b4"
+    #assert CBOR.encode({:text, "\ud800\udd51"}, [to_hex: true]) == "64f0908591"
+    assert CBOR.encode([], [to_hex: true]) == "80"
+    assert CBOR.encode([1, 2, 3], [to_hex: true]) == "83010203"
+    assert CBOR.encode([1, [2, 3], [4, 5]], [to_hex: true]) == "8301820203820405"
+    assert CBOR.encode([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25], [to_hex: true]) == "98190102030405060708090a0b0c0d0e0f101112131415161718181819"
+    assert CBOR.encode(%{}, [to_hex: true]) == "a0"
+    assert CBOR.encode(%{1 => 2, 3 => 4}, [to_hex: true]) == "a201020304"
+    assert CBOR.encode(%{{:text, "a"} => 1, {:text, "b"} => [2, 3]}, [to_hex: true]) == "a26161016162820203"
+    assert CBOR.encode([{:text, "a"}, %{{:text, "b"} => {:text, "c"}}], [to_hex: true]) == "826161a161626163"
+    assert CBOR.encode(%{{:text, "a"} => {:text, "A"}, {:text, "b"} => {:text, "B"}, {:text, "c"} => {:text, "C"}, {:text, "d"} => {:text, "D"}, {:text, "e"} => {:text, "E"}}, [to_hex: true]) == "a56161614161626142616361436164614461656145"
+
+    # TODO: Indefinite
   end
 end
