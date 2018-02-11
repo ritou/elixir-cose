@@ -25,7 +25,7 @@ defmodule Cose.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
 
       # Erlang CBOR library
-      {:cbor, github: "timofey-barmin/cbor-erlang"}
+      {:cbor, github: "yjh0502/cbor-erlang"}
     ]
   end
 end

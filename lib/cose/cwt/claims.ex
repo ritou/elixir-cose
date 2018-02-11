@@ -9,18 +9,23 @@ defmodule COSE.CWT.Claims do
   Convert claims map into CBOR binary.
   Unregistered claims will be removed.
 
-  TODO: Currently cti is treated as a string, but it must be treated as a byte string.
-
   ## Examples
 
-    COSE.CWT.Claims.to_binary(%{
-      "iss" => "coap://as.example.com",
-      "sub" => "erikw",
-      "aud" => "coap://light.example.com",
-      "exp" => 1444064944,
-      "nbf" => 1443944944,
-      "iat" => 1443944944,
-      "cti" => "\\vq"}) |> Base.encode16(case: :lower)
+  ```Elixir
+  iex> claims = %{
+  ...>   "iss" => {:text, "coap://as.example.com"},
+  ...>   "sub" => {:text, "erikw"},
+  ...>   "aud" => {:text, "coap://light.example.com"},
+  ...>   "exp" => 1444064944,
+  ...>   "nbf" => 1443944944,
+  ...>   "iat" => 1443944944,
+  ...>   "cti" => "0b71" |> Base.decode16!(case: :lower)
+  ...> }
+  ...> 
+  ...> COSE.CWT.Claims.to_binary(claims) |> Base.encode16(case: :lower)
+  "a70175636f61703a2f2f61732e6578616d706c652e636f6d02656572696b77037818636f61703a2f2f6c696768742e6578616d706c652e636f6d041a5612aeb0051a5610d9f0061a5610d9f007420b71"
+  ```
+
   """
   def to_binary(map) when is_map(map) do
     try do

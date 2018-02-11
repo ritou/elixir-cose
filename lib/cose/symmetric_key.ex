@@ -3,6 +3,8 @@ defmodule COSE.SymmetricKey do
   Symmetric Key Struct for HMAC Key
   """
 
+  alias COSE.CBOR
+
   defstruct [
     :k,
     :kid,
@@ -41,13 +43,7 @@ defmodule COSE.SymmetricKey do
   end
 
   defp to_protected(sim_key) do
-    # %{@header_keys[:alg] => @header_alg_map[sim_key.alg]} |> CBOR.encode()
-    case sim_key.alg do
-      :HMAC_256_64 -> <<161, 1, 4>>
-      :HMAC_256 -> <<161, 1, 5>>
-      :HMAC_384 -> <<161, 1, 6>>
-      :HMAC_512 -> <<161, 1, 7>>
-    end
+    %{@header_keys[:alg] => @header_alg_map[sim_key.alg]} |> CBOR.encode()
   end
 
   @spec tag(content :: any, sim_key :: t) :: binary | nil
