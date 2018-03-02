@@ -59,30 +59,30 @@ defmodule COSE.SymmetricKey do
   end 
 
   @spec to_cwt_header(t) :: tuple
-  def to_cwt_header(sim_key) do
-    protected = to_protected(sim_key)
-    unprotected = to_unprotected(sim_key)
+  def to_cwt_header(sym_key) do
+    protected = to_protected(sym_key)
+    unprotected = to_unprotected(sym_key)
     {protected, unprotected}
   end
 
-  defp to_protected(sim_key) do
-    %{@header_keys[:alg] => @header_alg_map[sim_key.alg]} |> CBOR.encode()
+  defp to_protected(sym_key) do
+    %{@header_keys[:alg] => @header_alg_map[sym_key.alg]} |> CBOR.encode()
   end
 
   defp to_unprotected(%__MODULE__{kid: kid}) when not is_nil(kid), do: %{@header_keys[:kid] => kid}
   defp to_unprotected(_), do: %{}
 
-  @spec tag(structure :: any, sim_key :: t) :: binary | nil
-  def tag(structure, sim_key) do
-    case sim_key.alg do
-      :HMAC_256_64 -> tag_hmac_256_64(structure, sim_key.k)
-      :HMAC_256 -> tag_hmac_256(structure, sim_key.k)
-      :HMAC_384 -> tag_hmac_384(structure, sim_key.k)
-      :HMAC_512 -> tag_hmac_512(structure, sim_key.k)
-      :AES_MAC_128_64 -> tag_aes_mac_64(structure, sim_key.k)
-      :AES_MAC_256_64 -> tag_aes_mac_64(structure, sim_key.k)
-      :AES_MAC_128_128 -> tag_aes_mac_128(structure, sim_key.k)
-      :AES_MAC_256_128 -> tag_aes_mac_128(structure, sim_key.k)
+  @spec tag(structure :: any, sym_key :: t) :: binary | nil
+  def tag(structure, sym_key) do
+    case sym_key.alg do
+      :HMAC_256_64 -> tag_hmac_256_64(structure, sym_key.k)
+      :HMAC_256 -> tag_hmac_256(structure, sym_key.k)
+      :HMAC_384 -> tag_hmac_384(structure, sym_key.k)
+      :HMAC_512 -> tag_hmac_512(structure, sym_key.k)
+      :AES_MAC_128_64 -> tag_aes_mac_64(structure, sym_key.k)
+      :AES_MAC_256_64 -> tag_aes_mac_64(structure, sym_key.k)
+      :AES_MAC_128_128 -> tag_aes_mac_128(structure, sym_key.k)
+      :AES_MAC_256_128 -> tag_aes_mac_128(structure, sym_key.k)
       _ -> nil
     end
   end

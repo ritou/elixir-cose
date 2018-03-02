@@ -27,7 +27,7 @@ defmodule COSE.AsymmetricKey do
 
   @doc """
   ```
-  key = %{key_map = %{"crv" => "P-256", "kty" => "EC", "x" => ...}
+  key = %{key_map = %{"crv" => "P-256", "kty" => "EC2", "x" => ...}
         |> COSE.AsymmetricKey.ECDSA.from_map()
   asym_key = COSE.AsymmetricKey.new([k: key, kid: kid, alg: alg])
   ```
@@ -38,18 +38,32 @@ defmodule COSE.AsymmetricKey do
   end
 
   @spec to_cwt_header(t) :: tuple
-  def to_cwt_header(sim_key) do
-    protected = to_protected(sim_key)
-    unprotected = to_unprotected(sim_key)
+  def to_cwt_header(asym_key) do
+    protected = to_protected(asym_key)
+    unprotected = to_unprotected(asym_key)
     {protected, unprotected}
   end
 
-  defp to_protected(sim_key) do
-    %{@header_keys[:alg] => @header_alg_map[sim_key.alg]} |> CBOR.encode()
+  defp to_protected(asym_key) do
+    %{@header_keys[:alg] => @header_alg_map[asym_key.alg]} |> CBOR.encode()
   end
 
   defp to_unprotected(%__MODULE__{kid: kid}) when not is_nil(kid), do: %{@header_keys[:kid] => kid}
   defp to_unprotected(_), do: %{}
+
+  @spec sign(structure :: any, asym_key :: t) :: binary | nil
+  def sign(structure, asym_key) do
+    case asym_key.alg do
+      :ES256 -> sign_with_es256(structure, asym_key.k)
+      :ES384 -> sign_with_es384(structure, asym_key.k)
+      :ES512 -> sign_with_es512(structure, asym_key.k)
+      _ -> nil
+    end
+  end
+
+  defp sign_with_es256(content, k), do: :public_key.sign(content, :sha256, k) 
+  defp sign_with_es384(content, k), do: :public_key.sign(content, :sha384, k) 
+  defp sign_with_es512(content, k), do: :public_key.sign(content, :sha512, k) 
 
   @spec validate_protected(protected :: binary, key :: t) ::
     :ok |
