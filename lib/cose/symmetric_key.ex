@@ -35,7 +35,7 @@ defmodule COSE.SymmetricKey do
     :AES_MAC_256_128 => 32,
   }
 
-  @type t :: %__MODULE__{k: binary, kid: binary, alg: String.t()}
+  @type t :: %__MODULE__{k: binary, kid: binary, alg: atom}
 
   @doc """
   ```
