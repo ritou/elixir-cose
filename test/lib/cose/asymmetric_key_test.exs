@@ -5,7 +5,8 @@ defmodule COSE.AsymmetricKeyTest do
   doctest AsymmetricKey
 
   test "ES256" do
-    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = JOSE.JWK.generate_key(:secp256r1)
+    priv_jwk = JOSE.JWK.generate_key(:secp256r1)
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk
     kid = "Asymmetric256"
     alg = :ES256
 
@@ -19,10 +20,19 @@ defmodule COSE.AsymmetricKeyTest do
     payload = "sample payload"
     sig = AsymmetricKey.sign(payload, asym_key)
     assert sig |> byte_size() == 64
+
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
+
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk |> JOSE.JWK.to_public()
+    asym_key = AsymmetricKey.new(k: k, kid: kid, alg: alg)
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
   end
 
   test "ES384" do
-    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = JOSE.JWK.generate_key(:secp384r1)
+    priv_jwk = JOSE.JWK.generate_key(:secp384r1)
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk
     kid = "Asymmetric384"
     alg = :ES384
 
@@ -36,10 +46,19 @@ defmodule COSE.AsymmetricKeyTest do
     payload = "sample payload"
     sig = AsymmetricKey.sign(payload, asym_key)
     assert sig |> byte_size() == 96
+
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
+
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk |> JOSE.JWK.to_public()
+    asym_key = AsymmetricKey.new(k: k, kid: kid, alg: alg)
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
   end
 
   test "ES512" do
-    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = JOSE.JWK.generate_key(:secp521r1)
+    priv_jwk = JOSE.JWK.generate_key(:secp521r1)
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk
     kid = "Asymmetric512"
     alg = :ES512
 
@@ -52,6 +71,14 @@ defmodule COSE.AsymmetricKeyTest do
 
     payload = "sample payload"
     sig = AsymmetricKey.sign(payload, asym_key)
-    assert sig |> byte_size() == 128
+    assert sig |> byte_size() == 132
+
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
+
+    %JOSE.JWK{kty: {:jose_jwk_kty_ec, k}} = priv_jwk |> JOSE.JWK.to_public()
+    asym_key = AsymmetricKey.new(k: k, kid: kid, alg: alg)
+    assert :ok == AsymmetricKey.verify(payload, asym_key, sig)
+    assert {:error, :invalid_signature} == AsymmetricKey.verify(payload, asym_key, <<1, 2, 3, 4, 5>>)
   end
 end
