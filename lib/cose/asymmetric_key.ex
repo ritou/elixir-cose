@@ -19,7 +19,7 @@ defmodule COSE.AsymmetricKey do
   @header_alg_map %{
     :ES256 => -7,
     :ES384 => -35,
-    :ES512 => -36,
+    :ES512 => -36
   }
   @header_alg_value_map @header_alg_map |> Enum.into(%{}, fn {k, v} -> {v, k} end)
 
@@ -48,7 +48,9 @@ defmodule COSE.AsymmetricKey do
     %{@header_keys[:alg] => @header_alg_map[asym_key.alg]} |> CBOR.encode()
   end
 
-  defp to_unprotected(%__MODULE__{kid: kid}) when not is_nil(kid), do: %{@header_keys[:kid] => kid}
+  defp to_unprotected(%__MODULE__{kid: kid}) when not is_nil(kid),
+    do: %{@header_keys[:kid] => kid}
+
   defp to_unprotected(_), do: %{}
 
   @doc """
@@ -70,20 +72,25 @@ defmodule COSE.AsymmetricKey do
   # NOTE: If there is a length mismatch of r, s, sign it again
   defp sign_with_es256(content, k) do
     der_sig = :public_key.sign(content, :sha256, k)
+
     case der_sig |> der_to_bin(256) do
       nil -> sign_with_es256(content, k)
       sig -> sig
     end
   end
+
   defp sign_with_es384(content, k) do
-    der_sig = :public_key.sign(content, :sha384, k) 
+    der_sig = :public_key.sign(content, :sha384, k)
+
     case der_sig |> der_to_bin(384) do
       nil -> sign_with_es384(content, k)
       sig -> sig
     end
   end
+
   defp sign_with_es512(content, k) do
     der_sig = :public_key.sign(content, :sha512, k)
+
     case der_sig |> der_to_bin(521) do
       nil -> sign_with_es512(content, k)
       sig -> sig
@@ -95,24 +102,29 @@ defmodule COSE.AsymmetricKey do
 
     r_begin =
       case binary_part(der_sig, 1, 1) do
-        <<len>> when len < 128 -> 3
+        <<len>> when len < 128 ->
+          3
+
         # NOTE: not support valiable length
-        _ -> 4
+        _ ->
+          4
       end
 
     <<r_len>> = der_sig |> binary_part(r_begin, 1)
     <<s_len>> = der_sig |> binary_part(r_begin + r_len + 2, 1)
 
-    if (r_len == key_size_bytes) && (s_len == key_size_bytes) do
+    if r_len == key_size_bytes && s_len == key_size_bytes do
       (der_sig |> binary_part(r_begin + 1, key_size_bytes)) <>
-      (der_sig |> binary_part(r_begin + key_size_bytes + 3, key_size_bytes))
+        (der_sig |> binary_part(r_begin + key_size_bytes + 3, key_size_bytes))
     else
       nil
     end
   end
-  defp der_to_bin(_,_), do: nil
 
-  @spec verify(structure :: any, asym_key :: t, signature :: binary) :: :ok | {:error, :invalid_signature}
+  defp der_to_bin(_, _), do: nil
+
+  @spec verify(structure :: any, asym_key :: t, signature :: binary) ::
+          :ok | {:error, :invalid_signature}
   def verify(structure, asym_key, signature) do
     case asym_key.alg do
       :ES256 -> signature |> verify_with_es256(structure, asym_key.k)
@@ -157,12 +169,14 @@ defmodule COSE.AsymmetricKey do
       der_sig -> :public_key.verify(content, :sha256, der_sig, k)
     end
   end
+
   defp verify_with_es384(bin_sig, content, k) do
     case bin_sig |> bin_to_der(384) do
       nil -> false
       der_sig -> :public_key.verify(content, :sha384, der_sig, k)
     end
   end
+
   defp verify_with_es512(bin_sig, content, k) do
     case bin_sig |> bin_to_der(521) do
       nil -> false
@@ -171,9 +185,9 @@ defmodule COSE.AsymmetricKey do
   end
 
   @spec validate_protected(protected :: binary, key :: t) ::
-    :ok |
-    {:error, :invalid_protected} |
-    {:error, :invalid_alg}
+          :ok
+          | {:error, :invalid_protected}
+          | {:error, :invalid_alg}
   def validate_protected(protected, key) do
     case protected |> CBOR.decode() do
       decoded when is_map(decoded) ->
@@ -186,14 +200,16 @@ defmodule COSE.AsymmetricKey do
         else
           {:error, :invalid_alg}
         end
-      _ -> {:error, :invalid_protected}
+
+      _ ->
+        {:error, :invalid_protected}
     end
   end
 
   @spec validate_unprotected(unprotected :: map, key :: t) ::
-    :ok |
-    {:error, :invalid_unprotected} |
-    {:error, :invalid_kid}
+          :ok
+          | {:error, :invalid_unprotected}
+          | {:error, :invalid_kid}
   def validate_unprotected(unprotected, key) when is_map(unprotected) do
     cond do
       is_nil(unprotected[@header_keys[:kid]]) ->
@@ -202,9 +218,14 @@ defmodule COSE.AsymmetricKey do
         else
           :ok
         end
-      unprotected[@header_keys[:kid]] == key.kid -> :ok
-      true -> {:error, :invalid_kid}
+
+      unprotected[@header_keys[:kid]] == key.kid ->
+        :ok
+
+      true ->
+        {:error, :invalid_kid}
     end
   end
+
   def validate_unprotected(_, _), do: {:error, :invalid_unprotected}
 end

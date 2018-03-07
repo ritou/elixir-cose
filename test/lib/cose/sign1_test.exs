@@ -15,13 +15,15 @@ defmodule COSE.Sign1Test do
     key = AsymmetricKey.new(k: k, kid: kid, alg: alg)
 
     payload =
-      %{1 => {:text, "coap://as.example.com"},
+      %{
+        1 => {:text, "coap://as.example.com"},
         2 => {:text, "erikw"},
         3 => {:text, "coap://light.example.com"},
-        4 => 1444064944,
-        5 => 1443944944,
-        6 => 1443944944,
-        7 => "0b71" |> Base.decode16!(case: :lower)}
+        4 => 1_444_064_944,
+        5 => 1_443_944_944,
+        6 => 1_443_944_944,
+        7 => "0b71" |> Base.decode16!(case: :lower)
+      }
       |> CBOR.encode()
 
     [protected, unprotected, decoded_payload, signature] = Sign1.to_object(payload, key)

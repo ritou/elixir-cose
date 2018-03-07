@@ -53,52 +53,58 @@ defmodule COSE.AsymmetricKey.ECDSA do
   # TODO: don't return nil and do error handling
 
   # Public Key and Private Key with raw binary
-  def from_map(key_map =
-    %{"kty" => "EC2",
-      "crv" => crv}
-  ) when crv in @supported_curves do
+  def from_map(key_map = %{"kty" => "EC2", "crv" => crv}) when crv in @supported_curves do
     try do
       key_map
-      |> Enum.into(%{}, fn {k, v} -> if k in ["crv", "kty"] do {k, v} else {k, v |> Base.url_encode64(padding: false)} end end)
+      |> Enum.into(%{}, fn {k, v} ->
+        if k in ["crv", "kty"] do
+          {k, v}
+        else
+          {k, v |> Base.url_encode64(padding: false)}
+        end
+      end)
       |> from_map(encode: :base64url)
     rescue
       e ->
-        Logger.debug("Base.url_encode64/2 raised error. #{inspect e}")
+        Logger.debug("Base.url_encode64/2 raised error. #{inspect(e)}")
         nil
     end
   end
+
   def from_map(_), do: nil
 
   # Public Key and Private Key with Base16 Encoding
-  def from_map(key_map =
-    %{"kty" => "EC2",
-      "crv" => crv},
-    encode: :base16
-  ) when crv in @supported_curves do
+  def from_map(key_map = %{"kty" => "EC2", "crv" => crv}, encode: :base16)
+      when crv in @supported_curves do
     try do
       key_map
-      |> Enum.into(%{}, fn {k, v} -> if k in ["crv", "kty"] do {k, v} else {k, v |> Base.decode16!(case: :lower) |> Base.url_encode64(padding: false)} end end)
+      |> Enum.into(%{}, fn {k, v} ->
+        if k in ["crv", "kty"] do
+          {k, v}
+        else
+          {k, v |> Base.decode16!(case: :lower) |> Base.url_encode64(padding: false)}
+        end
+      end)
       |> from_map(encode: :base64url)
     rescue
       e ->
-        Logger.debug("Base.decode16!/2 or Base.url_encode64/2 raised error. #{inspect e}")
+        Logger.debug("Base.decode16!/2 or Base.url_encode64/2 raised error. #{inspect(e)}")
         nil
     end
   end
 
   # Public Key and Private Key with Base64 URL Encoding
-  def from_map(key_map =
-    %{"kty" => "EC2",
-      "crv" => crv},
-    encode: :base64url
-  ) when crv in @supported_curves do
-    with %JOSE.JWK{kty: {:jose_jwk_kty_ec, ec_key}} <- JOSE.JWK.from_map(key_map |> Map.put("kty", "EC")) do
+  def from_map(key_map = %{"kty" => "EC2", "crv" => crv}, encode: :base64url)
+      when crv in @supported_curves do
+    with %JOSE.JWK{kty: {:jose_jwk_kty_ec, ec_key}} <-
+           JOSE.JWK.from_map(key_map |> Map.put("kty", "EC")) do
       ec_key
     else
       e ->
-        Logger.debug("JOSE.JWK.from_map/1 raised error. #{inspect e}")
+        Logger.debug("JOSE.JWK.from_map/1 raised error. #{inspect(e)}")
         nil
     end
   end
+
   def from_map(_, _), do: nil
 end
