@@ -36,7 +36,7 @@ defmodule COSE.CBOR do
   def parse_tag(_), do: nil
 
   # Encoder
-  def encode(value, [to_hex: true]) do
+  def encode(value, to_hex: true) do
     encode(value) |> Base.encode16(case: :lower)
   end
 
@@ -46,8 +46,7 @@ defmodule COSE.CBOR do
     |> :erlang.list_to_bitstring()
   end
 
-  def encode(num) when is_integer(num) and num > 4_294_967_295,
-    do: <<27>> <> <<num::size(64)>>
+  def encode(num) when is_integer(num) and num > 4_294_967_295, do: <<27>> <> <<num::size(64)>>
 
   def encode(num) when is_integer(num) and num > 65535, do: <<26>> <> <<num::size(32)>>
   def encode(num) when is_integer(num) and num > 255, do: <<25>> <> <<num::size(16)>>
@@ -57,17 +56,18 @@ defmodule COSE.CBOR do
   # negative int
   def encode(num) when is_integer(num) and num >= -24, do: <<num * -1 + 31>>
   def encode(num) when is_integer(num) and num >= -255, do: <<56, (num + 1) * -1>>
-  def encode(num) when is_integer(num) and num >= -65535, do: <<57, ((num + 1) * -1)::size(16)>>
+  def encode(num) when is_integer(num) and num >= -65535, do: <<57, (num + 1) * -1::size(16)>>
 
   def encode(num) when is_integer(num) and num >= -4_294_967_295,
-    do: <<58, ((num + 1) * -1)::size(32)>>
+    do: <<58, (num + 1) * -1::size(32)>>
 
   def encode(num) when is_integer(num) and num >= -18_446_744_073_709_551_616,
-    do: <<59, ((num + 1) * -1)::size(64)>>
+    do: <<59, (num + 1) * -1::size(64)>>
 
   # negative bignum
   def encode(num) when is_integer(num) and num < -18_446_744_073_709_551_616 do
     inv = -1 - num
+
     [<<195>>, encode_bin(size256(inv), bignum_bytes(inv))]
     |> :erlang.list_to_bitstring()
   end
@@ -108,11 +108,13 @@ defmodule COSE.CBOR do
   def encode({:simple, value}) when is_integer(value) and value >= 0 and value <= 19 do
     <<224 + value>>
   end
+
   def encode({:simple, value}) when is_integer(value) and value > 19 and value <= 255 do
     <<248, value>>
   end
+
   ## not supported
-  def encode({:simple, _}), do: <<0>> 
+  def encode({:simple, _}), do: <<0>>
 
   # tag
   def encode({:timetext, timetext}), do: encode_tag(0, timetext)
@@ -177,7 +179,8 @@ defmodule COSE.CBOR do
   defp list_initial_byte(len) when len <= 65535, do: <<153, len::size(16)>>
   defp list_initial_byte(len) when len <= 4_294_967_295, do: <<154, len::size(32)>>
   defp list_initial_byte(len) when len <= 18_446_744_073_709_551_615, do: <<155, len::size(64)>>
-  defp list_initial_byte(_), do: <<0>> # not supported
+  # not supported
+  defp list_initial_byte(_), do: <<0>>
 
   defp size256(num), do: <<num::size(256)>> |> binary_part(32, -1 * bignum_bytes(num))
   defp bignum_bytes(num) when num > 255, do: 1 + bignum_bytes(div(num, 256))
@@ -186,10 +189,15 @@ defmodule COSE.CBOR do
   defp encode_tag(tag, value) when tag >= 0 and tag <= 23, do: <<192 + tag>> <> encode(value)
   defp encode_tag(tag, value) when tag <= 255, do: <<216, tag>> <> encode(value)
   defp encode_tag(tag, value) when tag <= 65535, do: <<217, tag::size(16)>> <> encode(value)
-  defp encode_tag(tag, value) when tag <= 4_294_967_295, do: <<218, tag::size(32)>> <> encode(value)
+
+  defp encode_tag(tag, value) when tag <= 4_294_967_295,
+    do: <<218, tag::size(32)>> <> encode(value)
+
   defp encode_tag(tag, value) when tag <= 18_446_744_073_709_551_615,
     do: <<91, tag::size(64)>> <> encode(value)
-  defp encode_tag(_, _), do: <<0>> # not supported
+
+  # not supported
+  defp encode_tag(_, _), do: <<0>>
 
   @spec decode(cbor_binary :: binary) :: any
   def decode(binary), do: :cbor.decode(binary)
