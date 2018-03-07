@@ -37,7 +37,7 @@ defmodule COSE.Mac0Test do
     # https://tools.ietf.org/html/draft-ietf-ace-cbor-web-token-12#appendix-A.4
     assert (Mac0.to_object(payload, key) |> CBOR.tag(:COSE_Mac0) |> CBOR.tag(:CWT_CBOR) |> CBOR.encode() |> Base.encode16(case: :lower))  == "d83dd18443a10104a1044c53796d6d65747269633235365850a70175636f61703a2f2f61732e6578616d706c652e636f6d02656572696b77037818636f61703a2f2f6c696768742e6578616d706c652e636f6d041a5612aeb0051a5610d9f0061a5610d9f007420b7148093101ef6d789200"
 
-    assert Mac0.to_object(payload, key) |> Mac0.validate_tag(key) == :ok
+    assert Mac0.to_object(payload, key) |> Mac0.validate(key) == :ok
   end
 
   test "AES_MAC_128_128" do
@@ -68,6 +68,6 @@ defmodule COSE.Mac0Test do
     assert decoded_payload == payload
     assert byte_size(tag) == 16
 
-    assert Mac0.to_object(payload, key) |> Mac0.validate_tag(key) == :ok
+    assert Mac0.to_object(payload, key) |> Mac0.validate(key) == :ok
   end
 end

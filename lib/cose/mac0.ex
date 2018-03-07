@@ -27,14 +27,14 @@ defmodule COSE.Mac0 do
     SymmetricKey.tag(mac0_structure |> CBOR.encode(), key)
   end
 
-  @spec validate_tag(object :: list, key :: SymmetricKey.t) ::
+  @spec validate(object :: list, key :: SymmetricKey.t) ::
     :ok |
     {:error, :invalid_protected} |
     {:error, :invalid_alg} |
     {:error, :invalid_unprotected} |
     {:error, :invalid_kid} |
     {:error, :invalid_tag}
-  def validate_tag([protected, unprotected, payload, tag], key = %SymmetricKey{}) do
+  def validate([protected, unprotected, payload, tag], key = %SymmetricKey{}) do
     with :ok <- SymmetricKey.validate_protected(protected, key),
          :ok <- SymmetricKey.validate_unprotected(unprotected, key),
          :ok <- validate_tag(key, payload, tag)
@@ -45,7 +45,7 @@ defmodule COSE.Mac0 do
     end
   end
 
-  def validate_tag(key, payload, tag) do
+  defp validate_tag(key, payload, tag) do
     expected_tag = build_tag(key, payload)
     if expected_tag == tag do
       :ok
