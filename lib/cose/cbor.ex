@@ -55,10 +55,10 @@ defmodule COSE.CBOR do
 
   # negative int
   def encode(num) when is_integer(num) and num >= -24, do: <<num * -1 + 31>>
-  def encode(num) when is_integer(num) and num >= -255, do: <<56, (num + 1) * -1>>
-  def encode(num) when is_integer(num) and num >= -65535, do: <<57, (num + 1) * -1::size(16)>>
+  def encode(num) when is_integer(num) and num >= -256, do: <<56, (num + 1) * -1>>
+  def encode(num) when is_integer(num) and num >= -65536, do: <<57, (num + 1) * -1::size(16)>>
 
-  def encode(num) when is_integer(num) and num >= -4_294_967_295,
+  def encode(num) when is_integer(num) and num >= -4_294_967_296,
     do: <<58, (num + 1) * -1::size(32)>>
 
   def encode(num) when is_integer(num) and num >= -18_446_744_073_709_551_616,
